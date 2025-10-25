@@ -6,8 +6,8 @@ class SexoPage extends StatefulWidget {
 
 class _SexoPageState extends State<SexoPage> {
   List<Sexo> _sexoList = [];
-  List<Sexo> _filteredSexoList = [];
-  String _searchText = '';
+  List<Sexo> _filteredSsexoList = [];
+  String _searchText = "";
   bool _isLoading = true;
 
   @override
@@ -20,7 +20,10 @@ class _SexoPageState extends State<SexoPage> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(Uri.parse(
-          'https://educaysoft.org/apple6b/app/controllers/SexoController.php?action=api'));
+          'https://educaysoft.org/apple6b/app/controllers/SexoController.php?action=api'
+          
+          ));
+          
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as List<dynamic>;
         setState(() {
