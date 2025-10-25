@@ -1,138 +1,4 @@
-import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
-void main() {
-  runApp(MyApp()); // Cambiado el nombres de la app a MyApp
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SICA App', // Título de la aplicación
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: MainScreen(),
-    );
-  }
-}
-
-class MainScreen extends StatefulWidget {
-  @override
-  _MainScreenState createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-
-  // Lista de páginas que se mostrarán en el cuerpo del Scaffold
-  // El orden aquí debe coincidir con el orden de los BottomNavigationBarItem
-  final List<Widget> _pages = [
-    SexoPage(),
-    TelefonoPage(),
-    PersonaPage(), // Nueva página para Personas
-    Placeholder(), // Página "Acerca de" o cualquier otra que desees
-  ];
-
-  // Función que se llama cuando se toca un elemento del BottomNavigationBar
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("SICA - Registro")), // Título de la AppBar
-      body: _pages[_selectedIndex], // Muestra la página seleccionada
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Sexo'),
-          BottomNavigationBarItem(icon: Icon(Icons.phone), label: 'Telefono'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Persona'), // Nuevo ítem para Persona
-          BottomNavigationBarItem(icon: Icon(Icons.info), label: 'Acerca de'),
-        ],
-        currentIndex: _selectedIndex, // Índice del ítem seleccionado actualmente
-        onTap: _onItemTapped, // Callback cuando se toca un ítem
-        selectedItemColor: Colors.blue, // Color del ítem seleccionado
-        unselectedItemColor: Colors.grey, // Color de los ítems no seleccionados
-      ),
-    );
-  }
-}
-
-// --- Clases de Modelo ---
-
-// Modelo para los datos de Sexo
-class Sexo {
-  final String idsexo;
-  final String nombre;
-
-  Sexo({required this.idsexo, required this.nombre});
-
-  factory Sexo.fromJson(Map<String, dynamic> json) {
-    return Sexo(
-      idsexo: json['idsexo'].toString(),
-      nombre: json['nombre'],
-    );
-  }
-}
-
-// Modelo para los datos de Sexo
-class Telefono {
-  final String idtelefono;
-  final String numero;
-
-  Telefono({required this.idtelefono, required this.numero});
-
-  factory Telefono.fromJson(Map<String, dynamic> json) {
-    return Telefono(
-      idtelefono: json['idtelefono'].toString(),
-      numero: json['numero'],
-    );
-  }
-}
-
-
-
-
-
-
-
-// Modelo para los datos de Persona
-class Persona {
-  final String idpersona;
-  final String nombres;
-  final String apellidos;
-  final String elsexo;
-  final String elestadocivil;
-  final String fechanacimiento; // Asumiendo que viene como String
-
-  Persona({
-    required this.idpersona,
-    required this.nombres,
-    required this.apellidos,
-    required this.elsexo,
-    required this.elestadocivil,
-    required this.fechanacimiento,
-  });
-
-  factory Persona.fromJson(Map<String, dynamic> json) {
-    return Persona(
-      idpersona: json['idpersona'].toString(),
-      nombres: json['nombres'] ?? 'N/A',
-      apellidos: json['apellidos'] ?? 'N/A',
-      elsexo: json['elsexo'] ?? 'N/A',
-      elestadocivil: json['elestadocivil'] ?? 'N/A',
-      fechanacimiento: json['fechanacimiento'] ?? 'N/A',
-    );
-  }
-}
-
-// --- Páginas de Contenido ---
-
-// Página para mostrar la lista de Sexo
+// Página para mostrar la lista de Sexo (sin Scaffold)
 class SexoPage extends StatefulWidget {
   @override
   _SexoPageState createState() => _SexoPageState();
@@ -142,7 +8,7 @@ class _SexoPageState extends State<SexoPage> {
   List<Sexo> _sexoList = [];
   List<Sexo> _filteredSexoList = [];
   String _searchText = '';
-  bool _isLoading = true; // Para mostrar un indicador de carga
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -151,27 +17,23 @@ class _SexoPageState extends State<SexoPage> {
   }
 
   Future<void> _fetchSexoData() async {
-    setState(() {
-      _isLoading = true; // Inicia la carga
-    });
+    setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('https://educaysoft.org/apple6b/app/controllers/SexoController.php?action=api'));
+      final response = await http.get(Uri.parse(
+          'https://educaysoft.org/apple6b/app/controllers/SexoController.php?action=api'));
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final data = json.decode(response.body) as List<dynamic>;
         setState(() {
           _sexoList = data.map((item) => Sexo.fromJson(item)).toList();
           _filteredSexoList = _sexoList;
         });
       } else {
-        throw Exception('Error al cargar datos de Sexo: ${response.statusCode}');
+        debugPrint('Error Sexo: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error al obtener datos de Sexo: $e');
-      // Podrías mostrar un mensaje de error al usuario aquí
+      debugPrint('Excepción Sexo: $e');
     } finally {
-      setState(() {
-        _isLoading = false; // Finaliza la carga
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -188,69 +50,59 @@ class _SexoPageState extends State<SexoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Barra de búsqueda
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            onChanged: _filterSearch,
-            decoration: InputDecoration(
-              labelText: 'Buscar Sexo',
-              hintText: 'Ingrese nombres o ID',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              onChanged: _filterSearch,
+              decoration: InputDecoration(
+                labelText: 'Buscar Sexo',
+                hintText: 'Ingrese nombre o ID',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
               ),
             ),
           ),
-        ),
-        // Lista de registros
-        Expanded(
-          child: _isLoading
-              ? Center(child: CircularProgressIndicator()) // Indicador de carga
-              : _filteredSexoList.isEmpty
-                  ? Center(child: Text("No hay datos de Sexo disponibles"))
-                  : ListView.builder(
-                      itemCount: _filteredSexoList.length,
-                      itemBuilder: (context, index) {
-                        final sexo = _filteredSexoList[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                          elevation: 2.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: ListTile(
-                            leading: Icon(Icons.people, color: Colors.blueAccent),
-                            title: Text(sexo.nombre, style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text("ID: ${sexo.idsexo}"),
-                            trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
-                            onTap: () {
-                              // Acción al hacer tap en un elemento de sexo
-                              print('Sexo seleccionado: ${sexo.nombre}');
-                            },
-                          ),
-                        );
-                      },
-                    ),
-        ),
-      ],
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _filteredSexoList.isEmpty
+                    ? const Center(child: Text("No hay datos de Sexo disponibles"))
+                    : ListView.builder(
+                        itemCount: _filteredSexoList.length,
+                        itemBuilder: (context, index) {
+                          final sexo = _filteredSexoList[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            elevation: 2,
+                            child: ListTile(
+                              leading: const Icon(Icons.people, color: Colors.blueAccent),
+                              title: Text(sexo.nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text("ID: ${sexo.idsexo}"),
+                              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Sexo seleccionado: ${sexo.nombre}'), duration: const Duration(seconds: 1)),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 
-
-
-
-
-
-
-
-
-
-// Página para mostrar la lista de Telefono
+// Página para mostrar la lista de Telefono (sin Scaffold)
 class TelefonoPage extends StatefulWidget {
   @override
   _TelefonoPageState createState() => _TelefonoPageState();
@@ -260,7 +112,7 @@ class _TelefonoPageState extends State<TelefonoPage> {
   List<Telefono> _telefonoList = [];
   List<Telefono> _filteredTelefonoList = [];
   String _searchText = '';
-  bool _isLoading = true; // Para mostrar un indicador de carga
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -269,27 +121,23 @@ class _TelefonoPageState extends State<TelefonoPage> {
   }
 
   Future<void> _fetchTelefonoData() async {
-    setState(() {
-      _isLoading = true; // Inicia la carga
-    });
+    setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('https://educaysoft.org/apple6b/app/controllers/TelefonoController.php?action=api'));
+      final response = await http.get(Uri.parse(
+          'https://educaysoft.org/apple6b/app/controllers/TelefonoController.php?action=api'));
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final data = json.decode(response.body) as List<dynamic>;
         setState(() {
           _telefonoList = data.map((item) => Telefono.fromJson(item)).toList();
           _filteredTelefonoList = _telefonoList;
         });
       } else {
-        throw Exception('Error al cargar datos de Telefono: ${response.statusCode}');
+        debugPrint('Error Teléfono: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error al obtener datos de Telefono: $e');
-      // Podrías mostrar un mensaje de error al usuario aquí
+      debugPrint('Excepción Teléfono: $e');
     } finally {
-      setState(() {
-        _isLoading = false; // Finaliza la carga
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -306,106 +154,58 @@ class _TelefonoPageState extends State<TelefonoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Barra de búsqueda
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            onChanged: _filterSearch,
-            decoration: InputDecoration(
-              labelText: 'Buscar Telefono',
-              hintText: 'Ingrese numeros o ID',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              onChanged: _filterSearch,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Buscar Teléfono',
+                hintText: 'Ingrese número o ID',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
-        ),
-        // Lista de registros
-        Expanded(
-          child: _isLoading
-              ? Center(child: CircularProgressIndicator()) // Indicador de carga
-              : _filteredTelefonoList.isEmpty
-                  ? Center(child: Text("No hay datos de Telefono disponibles"))
-                  : ListView.builder(
-                      itemCount: _filteredTelefonoList.length,
-                      itemBuilder: (context, index) {
-                        final telefono = _filteredTelefonoList[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                          elevation: 2.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: ListTile(
-                            leading: Icon(Icons.people, color: Colors.blueAccent),
-                            title: Text(telefono.numero, style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text("ID: ${telefono.idtelefono}"),
-                            trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
-                            onTap: () {
-                              // Acción al hacer tap en un elemento de telefono
-                              print('Telefono seleccionado: ${telefono.numero}');
-                            },
-                          ),
-                        );
-                      },
-                    ),
-        ),
-      ],
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _filteredTelefonoList.isEmpty
+                    ? const Center(child: Text("No hay datos de Teléfono disponibles"))
+                    : ListView.builder(
+                        itemCount: _filteredTelefonoList.length,
+                        itemBuilder: (context, index) {
+                          final telefono = _filteredTelefonoList[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            child: ListTile(
+                              leading: const Icon(Icons.phone, color: Colors.blueAccent),
+                              title: Text(telefono.numero, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text("ID: ${telefono.idtelefono}"),
+                              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Teléfono seleccionado: ${telefono.numero}'), duration: const Duration(seconds: 1)),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+          )
+        ],
+      ),
     );
   }
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Página para mostrar la lista de Persona
+// Página para mostrar la lista de Persona (sin Scaffold)
 class PersonaPage extends StatefulWidget {
   @override
   _PersonaPageState createState() => _PersonaPageState();
@@ -415,7 +215,7 @@ class _PersonaPageState extends State<PersonaPage> {
   List<Persona> _personaList = [];
   List<Persona> _filteredPersonaList = [];
   String _searchText = '';
-  bool _isLoading = true; // Para mostrar un indicador de carga
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -424,27 +224,23 @@ class _PersonaPageState extends State<PersonaPage> {
   }
 
   Future<void> _fetchPersonaData() async {
-    setState(() {
-      _isLoading = true; // Inicia la carga
-    });
+    setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('https://educaysoft.org/apple6b/app/controllers/PersonaController.php?action=api'));
+      final response = await http.get(Uri.parse(
+          'https://educaysoft.org/apple6b/app/controllers/PersonaController.php?action=api'));
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final data = json.decode(response.body) as List<dynamic>;
         setState(() {
           _personaList = data.map((item) => Persona.fromJson(item)).toList();
           _filteredPersonaList = _personaList;
         });
       } else {
-        throw Exception('Error al cargar datos de Persona: ${response.statusCode}');
+        debugPrint('Error Persona: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error al obtener datos de Persona: $e');
-      // Podrías mostrar un mensaje de error al usuario aquí
+      debugPrint('Excepción Persona: $e');
     } finally {
-      setState(() {
-        _isLoading = false; // Finaliza la carga
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -455,69 +251,65 @@ class _PersonaPageState extends State<PersonaPage> {
           .where((item) =>
               item.nombres.toLowerCase().contains(query.toLowerCase()) ||
               item.apellidos.toLowerCase().contains(query.toLowerCase()) ||
-              item.fechanacimiento.contains(query))
+              item.idpersona.contains(query))
           .toList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Barra de búsqueda
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            onChanged: _filterSearch,
-            decoration: InputDecoration(
-              labelText: 'Buscar Persona',
-              hintText: 'Ingrese nombres, apellidos o cédula',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              onChanged: _filterSearch,
+              decoration: InputDecoration(
+                labelText: 'Buscar Persona',
+                hintText: 'Ingrese nombres o apellidos',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
-        ),
-        // Lista de registros
-        Expanded(
-          child: _isLoading
-              ? Center(child: CircularProgressIndicator()) // Indicador de carga
-              : _filteredPersonaList.isEmpty
-                  ? Center(child: Text("No hay datos de Persona disponibles"))
-                  : ListView.builder(
-                      itemCount: _filteredPersonaList.length,
-                      itemBuilder: (context, index) {
-                        final persona = _filteredPersonaList[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                          elevation: 2.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: ListTile(
-                            leading: Icon(Icons.person, color: Colors.green),
-                            title: Text("${persona.nombres} ${persona.apellidos}", style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Fechanacimiento: ${persona.fechanacimiento}"),
-                                Text("TSexo: ${persona.elsexo}"),
-                                Text("Estado Civil: ${persona.elestadocivil}"),
-                              ],
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _filteredPersonaList.isEmpty
+                    ? const Center(child: Text("No hay datos de Persona disponibles"))
+                    : ListView.builder(
+                        itemCount: _filteredPersonaList.length,
+                        itemBuilder: (context, index) {
+                          final persona = _filteredPersonaList[index];
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            child: ListTile(
+                              leading: const Icon(Icons.person, color: Colors.green),
+                              title: Text("${persona.nombres} ${persona.apellidos}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Sexo: ${persona.elsexo}"),
+                                  Text("Estado civil: ${persona.elestadocivil}"),
+                                  Text("Fecha Nacimiento: ${persona.fechanacimiento}"),
+                                ],
+                              ),
+                              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Persona: ${persona.nombres} ${persona.apellidos}'), duration: const Duration(seconds: 1)),
+                                );
+                              },
                             ),
-                            trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
-                            onTap: () {
-                              // Acción al hacer tap en un elemento de persona
-                              print('Persona seleccionada: ${persona.nombres} ${persona.apellidos}');
-                            },
-                          ),
-                        );
-                      },
-                    ),
-        ),
-      ],
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }
-
